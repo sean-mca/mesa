@@ -1,0 +1,19 @@
+# Rust-specific
+**/target/
+# macOS-specific
+.DS_Store
+**/.DS_Store
+.Spotlight-V100
+**/.Spotlight-V100
+.Trashes
+**/.Trashes
+Icon?
+**/Icon?
+._*
+
+# Editor/IDE-specific (common examples)
+.idea/
+.vscode/
+*.swp
+*.bak
+*~

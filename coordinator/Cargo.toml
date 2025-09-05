@@ -1,0 +1,17 @@
+[package]
+name = "coordinator"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+actix-web = "4.11.0"
+actix-web-tonic = "1.0.0"
+prost = "0.14.1"
+serde = { version = "1.0.219", features = ["derive"] }
+sqlparser = { version = "0.58.0", features = ["serde", "serde_json"] }
+tokio = { version = "1.47.1", features = ["rt-multi-thread"] }
+tonic = "0.14.2"
+tonic-prost = "0.14.2"
+
+[build-dependencies]
+tonic-prost-build = "0.14.2"
