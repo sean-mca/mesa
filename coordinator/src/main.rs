@@ -1,10 +1,8 @@
-use actix_web::{App, HttpResponse, HttpServer, Responder, get, post, web};
-use register::{RegisterRequest, RegisterResponse, register_server::Register};
-use sqlparser::dialect::GenericDialect;
-use sqlparser::parser::Parser;
-use tonic::{Request, Response, Status, transport::Server};
+mod actix_server;
+mod tonic_server;
 mod worker_map;
 use crate::register::register_server::RegisterServer;
+use tonic::transport::Server;
 
 mod structs;
 
@@ -12,40 +10,15 @@ pub mod register {
     tonic::include_proto!("register");
 }
 
-#[derive(Debug, Default)]
-pub struct MyRegister {}
-
-#[tonic::async_trait]
-impl Register for MyRegister {
-    async fn reg(
-        &self,
-        request: Request<RegisterRequest>,
-    ) -> Result<Response<RegisterResponse>, Status> {
-        let reply = RegisterResponse {
-            confirmation: "confirmed".to_string(),
-        };
-
-        Ok(Response::new(reply))
-    }
-}
-
-#[get("/health")]
-async fn health() -> impl Responder {
-    HttpResponse::Ok().body("pong")
-}
-
 #[tokio::main]
 async fn launch_servers() -> Result<(), Box<dyn std::error::Error>> {
-    let actix_future = {
-        HttpServer::new(|| App::new().service(health))
-            .bind("0.0.0.0:3000")
-            .expect("error launching actix server")
-            .run()
-    };
+    let worker_map = worker_map::MapManager::init();
+
+    let actix_future = actix_server::create_actix_server(worker_map);
 
     let tonic_future = {
         let addr = "[::1]:50051".parse().expect("error parsing tonic addr");
-        let register = MyRegister::default();
+        let register = tonic_server::MyRegister::default();
         Server::builder()
             .add_service(RegisterServer::new(register))
             .serve(addr)
