@@ -17,3 +17,8 @@ Icon?
 *.swp
 *.bak
 *~
+
+
+
+#samply
+**/*.json.gz

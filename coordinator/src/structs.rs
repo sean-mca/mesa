@@ -7,6 +7,6 @@ pub struct Query {
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub struct CompositeKey {
-    pub id: String,
+    pub ip: String,
     pub timestamp: u64,
 }

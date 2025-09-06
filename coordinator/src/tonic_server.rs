@@ -1,5 +1,3 @@
-use std::sync::Mutex;
-
 use crate::{
     register::{RegisterRequest, RegisterResponse, register_server::Register},
     worker_map::{self},
@@ -29,8 +27,6 @@ impl Register for MyRegister {
         let r = request.into_inner();
 
         let _ = &self.data.map.map.lock().unwrap().insert(r.ip, r.timestamp);
-
-        println!("BTREE TEST: {:#?}", &self.data.map.map);
 
         let reply = RegisterResponse {
             confirmation: "confirmed".to_string(),
