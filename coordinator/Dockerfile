@@ -11,6 +11,7 @@ ENV PATH="/usr/local/bin:${PATH}"
 
 WORKDIR /wd
 COPY . /wd
+COPY ../protos/ /wd
 RUN cargo build --bins --release
 
 FROM scratch

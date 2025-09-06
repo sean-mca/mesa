@@ -3,7 +3,7 @@ use actix_web::{App, HttpResponse, HttpServer, Responder, dev::Server, get, post
 use std::time::{SystemTime, UNIX_EPOCH};
 
 struct AppState {
-    map: worker_map::MapManager,
+    pub map: worker_map::MapManager,
 }
 
 #[get("/health")]
@@ -13,17 +13,6 @@ async fn health() -> impl Responder {
 
 #[post("/sql")]
 async fn sql(data: web::Data<AppState>) -> impl Responder {
-    let now = SystemTime::now();
-    let duration_since_epoch = now.duration_since(UNIX_EPOCH).expect("Time went backwards");
-    let timestamp_secs = duration_since_epoch.as_secs() - 30;
-
-    let test = data
-        .map
-        .map
-        .lock()
-        .expect("error acquiring mutex lock")
-        .retain(|_key, value| *value > timestamp_secs);
-
     HttpResponse::Ok()
 }
 

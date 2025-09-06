@@ -4,9 +4,3 @@ use serde::{Deserialize, Serialize};
 pub struct Query {
     pub query: String,
 }
-
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
-pub struct CompositeKey {
-    pub ip: String,
-    pub timestamp: u64,
-}
