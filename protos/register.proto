@@ -8,7 +8,8 @@ service Register {
 
 message RegisterRequest {
     string id = 1;
-    string timestamp = 2;
+    uint64 timestamp = 2;
+    string ip = 3;
 }
 
 message RegisterResponse {
