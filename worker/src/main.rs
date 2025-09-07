@@ -10,8 +10,11 @@ pub mod register {
 
 #[tokio::main]
 async fn launch_servers() -> Result<(), Box<dyn std::error::Error>> {
-    let mut client = RegisterClient::connect("http://[::1]:50051").await?;
+    let mut client =
+        RegisterClient::connect("http://mesa-coordinator-service.default.svc.cluster.local:50051")
+            .await?;
 
+    println!("CONNECTED OK");
     let actix_future = actix_server::create_actix_server();
 
     let heartbeat = {
@@ -23,7 +26,6 @@ async fn launch_servers() -> Result<(), Box<dyn std::error::Error>> {
                 let timestamp_secs = duration_since_epoch.as_secs();
 
                 let req = tonic::Request::new(RegisterRequest {
-                    id: "test".to_string(),
                     timestamp: timestamp_secs,
                     ip: "another test".to_string(),
                 });

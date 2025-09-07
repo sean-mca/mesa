@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mesa-worker
+  labels:
+    app: mesa-worker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mesa-worker
+  template:
+    metadata:
+      labels:
+        app: mesa-worker
+    spec:
+      containers:
+        - name: mesa-worker
+          image: mesa/worker:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 4000

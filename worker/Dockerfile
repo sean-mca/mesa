@@ -11,7 +11,7 @@ ENV PATH="/usr/local/bin:${PATH}"
 
 WORKDIR /wd
 COPY . /wd
-COPY ../protos/ /wd
+
 RUN cargo build --bins --release
 
 FROM scratch
@@ -22,5 +22,5 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certifi
 COPY --from=builder /wd/target/release/worker /
 
 EXPOSE 3000
-EXPOSE 50001
+EXPOSE 50051
 CMD ["./worker"]

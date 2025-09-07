@@ -17,7 +17,7 @@ async fn launch_servers() -> Result<(), Box<dyn std::error::Error>> {
     let actix_future = actix_server::create_actix_server(worker_map.clone());
 
     let tonic_future = {
-        let addr = "[::1]:50051".parse().expect("error parsing tonic addr");
+        let addr = "0.0.0.0:50051".parse().expect("error parsing tonic addr");
         let rdata = tonic_server::MyRegisterData {
             map: worker_map.clone(),
         };
@@ -27,21 +27,21 @@ async fn launch_servers() -> Result<(), Box<dyn std::error::Error>> {
             .serve(addr)
     };
 
-    let cleaner = {
-        let mut interval = tokio::time::interval(Duration::from_secs(30));
-        tokio::spawn(async move {
-            loop {
-                interval.tick().await;
-                let _ = worker_map.clean();
-                println!("Map has been cleaned")
-            }
-        })
-    };
+    // let cleaner = {
+    //     let mut interval = tokio::time::interval(Duration::from_secs(30));
+    //     tokio::spawn(async move {
+    //         loop {
+    //             interval.tick().await;
+    //             let _ = worker_map.clean();
+    //             println!("Map has been cleaned")
+    //         }
+    //     })
+    // };
 
     tokio::select! {
         _ = actix_future => {}
         _ = tonic_future => {}
-        _ = cleaner => {}
+        // _ = cleaner => {}
         _ = tokio::signal::ctrl_c()=>{
             println!("\n🛑 Shutdown signal received. Cleaning up...");
         }

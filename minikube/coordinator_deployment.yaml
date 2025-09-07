@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mesa-coordinator
+  labels:
+    app: mesa-coordinator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mesa-coordinator
+  template:
+    metadata:
+      labels:
+        app: mesa-coordinator
+    spec:
+      containers:
+        - name: mesa-coordinator
+          image: mesa/coordinator:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 3000
+              name: actix-web
+              protocol: TCP
+            - containerPort: 50051
+              name: tonic
+              protocol: TCP
