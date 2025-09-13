@@ -5,7 +5,7 @@ metadata:
   labels:
     app: mesa-worker
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
       app: mesa-worker
@@ -29,5 +29,5 @@ spec:
             httpGet:
               path: /health
               port: 4000
-            initialDelaySeconds: 5
+            initialDelaySeconds: 8
             periodSeconds: 5

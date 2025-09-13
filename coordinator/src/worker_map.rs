@@ -13,6 +13,7 @@ pub struct MapManager {
     pub map: Arc<Mutex<BTreeMap<CompositeKey, u64>>>,
 }
 
+//TODO: not sure I want to deal with arc<mutex<t>>, maybe channels & just a straight actor model
 impl MapManager {
     pub fn init() -> Self {
         let mut map = Arc::new(Mutex::new(BTreeMap::new()));

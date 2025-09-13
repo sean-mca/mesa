@@ -34,13 +34,14 @@ async fn launch_servers() -> Result<(), Box<dyn std::error::Error>> {
             .serve(addr)
     };
     info!("service init, tonic_server created OK");
+
     // let cleaner = {
     //     let mut interval = tokio::time::interval(Duration::from_secs(30));
     //     tokio::spawn(async move {
     //         loop {
     //             interval.tick().await;
     //             let _ = worker_map.clean();
-    //             println!("Map has been cleaned")
+    //             info!("Map has been cleaned");
     //         }
     //     })
     // };
@@ -50,7 +51,7 @@ async fn launch_servers() -> Result<(), Box<dyn std::error::Error>> {
         _ = tonic_future => {}
         // _ = cleaner => {}
         _ = tokio::signal::ctrl_c()=>{
-            println!("\n🛑 Shutdown signal received. Cleaning up...");
+            info!("\n🛑 Shutdown signal received. Cleaning up...");
         }
     }
 
