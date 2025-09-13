@@ -12,6 +12,9 @@ serde = { version = "1.0.219", features = ["derive"] }
 tokio = { version = "1.47.1", features = ["rt-multi-thread"] }
 tonic = "0.14.2"
 tonic-prost = "0.14.2"
+tracing = { version = "0.1.41", features = ["log"] }
+tracing-subscriber = { version = "0.3.20", features = ["serde", "tracing", "tracing-serde", "json"] }
+
 
 [build-dependencies]
 tonic-prost-build = "0.14.2"

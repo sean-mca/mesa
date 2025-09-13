@@ -5,7 +5,7 @@ metadata:
   labels:
     app: mesa-worker
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       app: mesa-worker
@@ -20,3 +20,14 @@ spec:
           imagePullPolicy: Never
           ports:
             - containerPort: 4000
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 4000
+            initialDelaySeconds: 5
+            periodSeconds: 5

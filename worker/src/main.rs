@@ -3,6 +3,7 @@ use register::RegisterRequest;
 use register::register_client::RegisterClient;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tokio::time::{Duration, sleep};
+use tracing::info;
 
 pub mod register {
     tonic::include_proto!("register");
@@ -10,11 +11,15 @@ pub mod register {
 
 #[tokio::main]
 async fn launch_servers() -> Result<(), Box<dyn std::error::Error>> {
+    tracing_subscriber::fmt::init();
     let mut client =
         RegisterClient::connect("http://mesa-coordinator-service.default.svc.cluster.local:50051")
             .await?;
+    info!("service init, connected to coordinator:50051 OK");
+    let pod_ip =
+        std::env::var("POD_IP").expect("unable to get podIP, cannot register with coordinator");
 
-    println!("CONNECTED OK");
+    info!("service init, pod IP acquired OK: {}", &pod_ip);
     let actix_future = actix_server::create_actix_server();
 
     let heartbeat = {
@@ -27,11 +32,11 @@ async fn launch_servers() -> Result<(), Box<dyn std::error::Error>> {
 
                 let req = tonic::Request::new(RegisterRequest {
                     timestamp: timestamp_secs,
-                    ip: "another test".to_string(),
+                    ip: pod_ip.to_string(),
                 });
 
                 let res = client.reg(req).await.expect("utoh");
-                println!("{:?}", res);
+                info!("{:?}", res);
                 sleep(Duration::from_secs(3)).await;
             }
         })
