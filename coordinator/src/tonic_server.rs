@@ -1,6 +1,6 @@
 use crate::{
     register::{RegisterRequest, RegisterResponse, register_server::Register},
-    worker_map::{self},
+    worker_map::{self, CompositeKey},
 };
 use tonic::{Request, Response, Status};
 use tracing::info;
@@ -32,7 +32,12 @@ impl Register for MyRegister {
             t = &r.timestamp
         );
 
-        let _ = &self.data.map.map.lock().unwrap().insert(r.ip, r.timestamp);
+        let ckey = CompositeKey {
+            ip: r.ip,
+            timestamp: r.timestamp,
+        };
+
+        let _ = &self.data.map.map.lock().unwrap().insert(ckey, r.timestamp);
 
         let reply = RegisterResponse {
             confirmation: "confirmed".to_string(),

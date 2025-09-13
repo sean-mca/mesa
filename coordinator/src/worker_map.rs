@@ -1,14 +1,21 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex};
 use std::time::{SystemTime, UNIX_EPOCH};
+
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub struct CompositeKey {
+    pub ip: String,
+    pub timestamp: u64,
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct MapManager {
-    pub map: Arc<Mutex<HashMap<String, u64>>>,
+    pub map: Arc<Mutex<BTreeMap<CompositeKey, u64>>>,
 }
 
 impl MapManager {
     pub fn init() -> Self {
-        let mut map = Arc::new(Mutex::new(HashMap::new()));
+        let mut map = Arc::new(Mutex::new(BTreeMap::new()));
 
         MapManager { map }
     }
@@ -24,6 +31,6 @@ impl MapManager {
             .map
             .lock()
             .expect("error acquiring lock")
-            .retain(|_key, value| *value > timestamp_secs);
+            .retain(|key, _value| key.timestamp > timestamp_secs);
     }
 }

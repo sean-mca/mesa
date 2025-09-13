@@ -14,10 +14,15 @@ pub mod register {
 #[tokio::main]
 async fn launch_servers() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
+
     let mut worker_map = worker_map::MapManager::init();
+
     info!("service init, worker_map created OK");
+
     let actix_future = actix_server::create_actix_server(worker_map.clone());
+
     info!("service init, actix_server created OK");
+
     let tonic_future = {
         let addr = "0.0.0.0:50051".parse().expect("error parsing tonic addr");
         let rdata = tonic_server::MyRegisterData {
