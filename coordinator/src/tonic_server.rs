@@ -23,16 +23,11 @@ impl Register for MyRegister {
     ) -> Result<Response<RegisterResponse>, Status> {
         let r = request.into_inner();
 
-        info!(
-            "Received registration from pod: {:#?} at {t}",
-            &r.ip,
-            t = &r.timestamp
-        );
-
         let _ = &self.sender.send(Message::InsertWorker(CompositeKey {
             ip: r.ip,
             timestamp: r.timestamp,
         }));
+
 
         let reply = RegisterResponse {
             confirmation: "confirmed".to_string(),
