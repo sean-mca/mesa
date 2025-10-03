@@ -43,8 +43,9 @@ async fn launch_servers() -> Result<(), Box<dyn std::error::Error>> {
     let listener = worker_map.listen(receive);
 
     let cleaner = tokio::spawn(async move {
-        // Create an interval that ticks every 3 seconds
-        let mut interval = tokio::time::interval(Duration::from_secs(3));
+        // Create an interval that ticks every X seconds
+        let interval = std::env::var("CLEAN_INTERVAL").unwrap_or(10);
+        let mut interval = tokio::time::interval(Duration::from_secs(interval));
         let sender = send.clone();
         loop {
             // Wait for the next tick of the interval
