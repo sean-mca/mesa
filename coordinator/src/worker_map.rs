@@ -23,7 +23,7 @@ impl MapManager {
         MapManager { map }
     }
 
-    pub async fn listen(&mut self, mut receiver: mpsc::Receiver<Message>) {
+    pub async fn listen(&mut self, mut receiver: mpsc::UnboundedReceiver<Message>) {
         while let Some(message) = receiver.recv().await {
             match message {
                 Message::GetWorkers(sender) => {

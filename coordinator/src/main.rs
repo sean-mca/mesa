@@ -31,18 +31,33 @@ async fn launch_servers() -> Result<(), Box<dyn std::error::Error>> {
     let tonic_future = {
         let addr = "0.0.0.0:50051".parse().expect("error parsing tonic addr");
 
-        let register = tonic_server::MyRegister { sender: send };
+        let register = tonic_server::MyRegister {
+            sender: send.clone(),
+        };
         Server::builder()
             .add_service(RegisterServer::new(register))
             .serve(addr)
     };
     info!("service init, tonic_server created OK");
 
-    //let listener = worker_map.begin_listening_and_cleaning(receive);
+    let listener = worker_map.listen(receive);
+
+    let cleaner = tokio::spawn(async move {
+        // Create an interval that ticks every 3 seconds
+        let mut interval = tokio::time::interval(Duration::from_secs(3));
+        let sender = send.clone();
+        loop {
+            // Wait for the next tick of the interval
+            interval.tick().await;
+            let _ = sender.send(Message::ClearOldWorkers);
+        }
+    });
+
     tokio::select! {
         _ = actix_future => {}
         _ = tonic_future => {}
-        //_ = listener => {}
+        _ = listener => {}
+        _ = cleaner => {}
         _ = tokio::signal::ctrl_c()=>{
             info!("\n🛑 Shutdown signal received. Cleaning up...");
         }
