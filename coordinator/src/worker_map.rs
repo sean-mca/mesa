@@ -28,7 +28,7 @@ impl MapManager {
         while let Some(message) = receiver.recv().await {
             match message {
                 Message::GetWorkers(sender) => {
-                    let keys = self.map.keys().cloned().map(|k| k.ip).collect().dedup();
+                    let keys = self.map.keys().cloned().collect();
                     let _ = sender.send(keys);
                 }
                 Message::ClearOldWorkers => {
