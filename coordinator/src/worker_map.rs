@@ -27,7 +27,7 @@ impl MapManager {
         while let Some(message) = receiver.recv().await {
             match message {
                 Message::GetWorkers(sender) => {
-                    let keys = self.map.keys().cloned().map(|k| k.ip).collect();
+                    let keys = self.map.keys().cloned().map(|k| k.ip).collect().dedup();
                     let _ = sender.send(keys);
                 }
                 Message::ClearOldWorkers => {
@@ -35,7 +35,7 @@ impl MapManager {
                     let duration_since_epoch = now
                         .duration_since(UNIX_EPOCH)
                         .expect("Time went backwards!");
-                    let timestamp_secs = duration_since_epoch.as_secs() - 30;
+                    let timestamp_secs = duration_since_epoch.as_secs() - 10;
 
                     let _ = &self
                         .map
