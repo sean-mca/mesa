@@ -24,6 +24,7 @@ impl MapManager {
     }
 
     pub async fn listen(&mut self, mut receiver: mpsc::UnboundedReceiver<Message>) {
+        let clean_interval = std::env::var("CLEAN_INTERVAL").unwrap_or(10);
         while let Some(message) = receiver.recv().await {
             match message {
                 Message::GetWorkers(sender) => {
@@ -31,11 +32,12 @@ impl MapManager {
                     let _ = sender.send(keys);
                 }
                 Message::ClearOldWorkers => {
+                    
                     let now = SystemTime::now();
                     let duration_since_epoch = now
                         .duration_since(UNIX_EPOCH)
                         .expect("Time went backwards!");
-                    let timestamp_secs = duration_since_epoch.as_secs() - 10;
+                    let timestamp_secs = duration_since_epoch.as_secs() - CLEAN_INTERVAL;
 
                     let _ = &self
                         .map
