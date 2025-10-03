@@ -1,5 +1,6 @@
 use crate::{
     register::{RegisterRequest, RegisterResponse, register_server::Register},
+    structs::Message,
     worker_map::CompositeKey,
 };
 use tokio::sync::mpsc::UnboundedSender;
@@ -11,7 +12,7 @@ pub mod register {
 
 #[derive(Debug)]
 pub struct MyRegister {
-    pub sender: UnboundedSender<CompositeKey>,
+    pub sender: UnboundedSender<Message>,
 }
 
 #[tonic::async_trait]
@@ -28,10 +29,10 @@ impl Register for MyRegister {
             t = &r.timestamp
         );
 
-        let _ = &self.sender.send(CompositeKey {
+        let _ = &self.sender.send(Message::InsertWorker(CompositeKey {
             ip: r.ip,
             timestamp: r.timestamp,
-        });
+        }));
 
         let reply = RegisterResponse {
             confirmation: "confirmed".to_string(),

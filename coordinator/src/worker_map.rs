@@ -1,9 +1,10 @@
 use std::collections::BTreeMap;
-use std::sync::{Arc, Mutex};
 use std::time::{SystemTime, UNIX_EPOCH};
+use tokio::sync::mpsc;
+use tracing::info;
 
-use std::time::Duration;
-use tokio::sync::mpsc::UnboundedReceiver;
+use crate::structs::Message;
+
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Default)]
 pub struct CompositeKey {
     pub ip: String,
@@ -22,34 +23,30 @@ impl MapManager {
         MapManager { map }
     }
 
-    pub async fn clean(&mut self) {
-        let now = SystemTime::now();
-        let duration_since_epoch = now
-            .duration_since(UNIX_EPOCH)
-            .expect("Time went backwards!");
-        let timestamp_secs = duration_since_epoch.as_secs() - 30;
+    pub async fn listen(&mut self, mut receiver: mpsc::Receiver<Message>) {
+        while let Some(message) = receiver.recv().await {
+            match message {
+                Message::GetWorkers(sender) => {
+                    let keys = self.map.keys().cloned().map(|k| k.ip).collect();
+                    let _ = sender.send(keys);
+                }
+                Message::ClearOldWorkers => {
+                    let now = SystemTime::now();
+                    let duration_since_epoch = now
+                        .duration_since(UNIX_EPOCH)
+                        .expect("Time went backwards!");
+                    let timestamp_secs = duration_since_epoch.as_secs() - 30;
 
-        let _ = &self
-            .map
-            .retain(|key, _value| key.timestamp > timestamp_secs);
-    }
+                    let _ = &self
+                        .map
+                        .retain(|key, _value| key.timestamp > timestamp_secs);
 
-    pub async fn listen_for_changes(&mut self, mut receiver: UnboundedReceiver<CompositeKey>) {
-        while let Some(msg) = receiver.recv().await {
-            let message_data = CompositeKey {
-                ip: msg.ip,
-                timestamp: msg.timestamp,
-            };
-
-            let _ = &self.map.insert(message_data, msg.timestamp);
+                    info!("BTreeMap cleared")
+                }
+                Message::InsertWorker(key) => {
+                    let _ = &self.map.insert(key.clone(), key.timestamp);
+                }
+            }
         }
-    }
-
-    pub async fn begin_listening_and_cleaning(
-        &mut self,
-        mut receiver: UnboundedReceiver<CompositeKey>,
-    ) {
-        &self.listen_for_changes(receiver);
-        let _ = &self.clean();
     }
 }
