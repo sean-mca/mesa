@@ -13,7 +13,7 @@ pub struct CompositeKey {
 
 #[derive(Debug, Clone, Default)]
 pub struct MapManager {
-    pub map: BTreeMap<CompositeKey, u64>,
+    pub map: BTreeMap<String, u64>,
 }
 
 impl MapManager {
@@ -41,12 +41,12 @@ impl MapManager {
 
                     let _ = &self
                         .map
-                        .retain(|key, _value| key.timestamp > timestamp_secs);
+                        .retain(|_key, value| value > timestamp_secs);
 
                     info!("BTreeMap cleared")
                 }
                 Message::InsertWorker(key) => {
-                    let _ = &self.map.insert(key.clone(), key.timestamp);
+                    let _ = &self.map.insert(key.ip, key.timestamp);
                 }
             }
         }
