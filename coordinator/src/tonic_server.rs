@@ -1,21 +1,17 @@
 use crate::{
     register::{RegisterRequest, RegisterResponse, register_server::Register},
-    worker_map::{self, CompositeKey},
+    worker_map::CompositeKey,
 };
+use tokio::sync::mpsc::UnboundedSender;
 use tonic::{Request, Response, Status};
 use tracing::info;
 pub mod register {
     tonic::include_proto!("register");
 }
 
-#[derive(Debug, Default)]
-pub struct MyRegisterData {
-    pub map: worker_map::MapManager,
-}
-
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct MyRegister {
-    pub data: MyRegisterData,
+    pub sender: UnboundedSender<CompositeKey>,
 }
 
 #[tonic::async_trait]
@@ -32,12 +28,10 @@ impl Register for MyRegister {
             t = &r.timestamp
         );
 
-        let ckey = CompositeKey {
+        let _ = &self.sender.send(CompositeKey {
             ip: r.ip,
             timestamp: r.timestamp,
-        };
-
-        let _ = &self.data.map.map.lock().unwrap().insert(ckey, r.timestamp);
+        });
 
         let reply = RegisterResponse {
             confirmation: "confirmed".to_string(),

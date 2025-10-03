@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 actix-web = "4.11.0"
+crossfire = { version = "2.1.4", features = ["tokio"] }
 datafusion = { version = "49.0.2", features = ["serde"] }
 prost = "0.14.1"
 serde = { version = "1.0.219", features = ["derive"] }

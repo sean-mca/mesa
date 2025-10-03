@@ -1,8 +1,10 @@
 mod actix_server;
 mod tonic_server;
 mod worker_map;
-use crate::register::register_server::RegisterServer;
-use tokio::time::{Duration, sleep};
+use std::time::Duration;
+
+use crate::{register::register_server::RegisterServer, worker_map::CompositeKey};
+
 use tonic::transport::Server;
 mod structs;
 use tracing::info;
@@ -14,7 +16,8 @@ pub mod register {
 #[tokio::main]
 async fn launch_servers() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
-
+    // TODO: this will need to be profiled and tested at scale so we don't nuke our memory footprint
+    let (send, mut receive) = tokio::sync::mpsc::unbounded_channel::<CompositeKey>();
     let mut worker_map = worker_map::MapManager::init();
 
     info!("service init, worker_map created OK");
@@ -25,31 +28,19 @@ async fn launch_servers() -> Result<(), Box<dyn std::error::Error>> {
 
     let tonic_future = {
         let addr = "0.0.0.0:50051".parse().expect("error parsing tonic addr");
-        let rdata = tonic_server::MyRegisterData {
-            map: worker_map.clone(),
-        };
-        let register = tonic_server::MyRegister { data: rdata };
+
+        let register = tonic_server::MyRegister { sender: send };
         Server::builder()
             .add_service(RegisterServer::new(register))
             .serve(addr)
     };
     info!("service init, tonic_server created OK");
 
-    // let cleaner = {
-    //     let mut interval = tokio::time::interval(Duration::from_secs(30));
-    //     tokio::spawn(async move {
-    //         loop {
-    //             interval.tick().await;
-    //             let _ = worker_map.clean();
-    //             info!("Map has been cleaned");
-    //         }
-    //     })
-    // };
-
+    let listener = worker_map.begin_listening_and_cleaning(receive);
     tokio::select! {
         _ = actix_future => {}
         _ = tonic_future => {}
-        // _ = cleaner => {}
+        _ = listener => {}
         _ = tokio::signal::ctrl_c()=>{
             info!("\n🛑 Shutdown signal received. Cleaning up...");
         }
