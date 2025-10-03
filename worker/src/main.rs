@@ -21,7 +21,7 @@ async fn launch_servers() -> Result<(), Box<dyn std::error::Error>> {
 
     info!("service init, pod IP acquired OK: {}", &pod_ip);
     let actix_future = actix_server::create_actix_server();
-
+    let heartbeat_interval = std::env::var("HEARTBEAT_INTERVAL").unwrap_or(3);
     let heartbeat = {
         tokio::spawn(async move {
             loop {
@@ -37,7 +37,7 @@ async fn launch_servers() -> Result<(), Box<dyn std::error::Error>> {
 
                 let res = client.reg(req).await.expect("utoh");
                 info!("{:?}", res);
-                sleep(Duration::from_secs(3)).await;
+                sleep(Duration::from_secs(heartbeat_interval)).await;
             }
         })
     };
