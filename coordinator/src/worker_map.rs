@@ -24,7 +24,10 @@ impl MapManager {
     }
 
     pub async fn listen(&mut self, mut receiver: mpsc::UnboundedReceiver<Message>) {
-        let clean_interval = std::env::var("CLEAN_INTERVAL").unwrap_or(10);
+        let clean_interval = std::env::var("CLEAN_INTERVAL")
+            .ok()
+            .and_then(|i| i.parse::<u64>().ok())
+            .unwrap_or(10);
         while let Some(message) = receiver.recv().await {
             match message {
                 Message::GetWorkers(sender) => {
@@ -32,16 +35,13 @@ impl MapManager {
                     let _ = sender.send(keys);
                 }
                 Message::ClearOldWorkers => {
-                    
                     let now = SystemTime::now();
                     let duration_since_epoch = now
                         .duration_since(UNIX_EPOCH)
                         .expect("Time went backwards!");
-                    let timestamp_secs = duration_since_epoch.as_secs() - CLEAN_INTERVAL;
+                    let timestamp_secs = duration_since_epoch.as_secs() - clean_interval;
 
-                    let _ = &self
-                        .map
-                        .retain(|_key, value| value > timestamp_secs);
+                    let _ = &self.map.retain(|_key, value| *value > timestamp_secs);
 
                     info!("BTreeMap cleared")
                 }
